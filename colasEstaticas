@@ -1,0 +1,239 @@
+#include <stdio.h>
+#include <windows.h>
+
+#define MAX_TAMANO 5
+
+struct Cola {
+    int elementos[MAX_TAMANO];
+    int frente, final;
+};
+
+void gotoxy(int x, int y) {
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+void imprimirTitulo() {
+	int i;
+    gotoxy(36, 3);
+    printf("%c", 201);
+    for ( i = 0; i < 30; ++i) {
+        printf("%c", 205);
+    }
+    printf("%c\n", 187);
+
+    gotoxy(36, 4);
+    printf("%c Manejo de colas simples      %c\n", 186, 186);
+
+    gotoxy(36, 5);
+    printf("%c", 200);
+    for (  i = 0; i < 30; ++i) {
+        printf("%c", 205);
+    }
+    printf("%c\n", 188);
+}
+
+void margen() {
+    int x, y;
+    x = 21;
+    gotoxy(x, 1);
+    printf("%c", 218);
+    gotoxy(x, 27);
+    printf("%c", 192);
+
+    for (x = 22; x <= 111; x++) {
+        gotoxy(x, 1);
+        printf("%c", 205);
+        gotoxy(x, 27);
+        printf("%c", 205);
+    }
+
+    for (y = 2; y <= 26; y++) {
+        gotoxy(21, y);
+        printf("%c", 179);
+        gotoxy(112, y);
+        printf("%c", 179);
+    }
+
+    gotoxy(112, 1);
+    printf("%c", 191);
+    gotoxy(112, 27);
+    printf("%c", 217);
+
+    imprimirTitulo();
+}
+
+void arrg(int p, int c, int f, struct Cola *cola) {
+    int i;
+
+    gotoxy(c, f);
+    printf("%c", 218);
+    gotoxy(c, f + 1);
+    printf("%c", 179);
+    gotoxy(c, f + 2);
+    printf("%c", 192);
+
+    for (i = 0; i < p - 1; i++) {
+        gotoxy(c + (i * 4) + 1, f);
+        printf("%c%c%c%c", 196, 196, 196, 194);
+        gotoxy(c + (i * 4) + 1, f + 1);
+        printf("   %c", 179);
+        gotoxy(c + (i * 4) + 1, f + 2);
+        printf("%c%c%c%c", 196, 196, 196, 193);
+    }
+
+    gotoxy(c + (i * 4) + 1, f);
+    printf("%c%c%c%c", 196, 196, 196, 191);
+    gotoxy(c + (i * 4) + 1, f + 1);
+    printf("   %c", 179);
+    gotoxy(c + (i * 4) + 1, f + 2);
+    printf("%c%c%c%c", 196, 196, 196, 217);
+
+    for (i = 0; i < p; i++) {
+        gotoxy(c + (i * 4) + 3, f + 1);
+        if (i < MAX_TAMANO) {
+            if (i >= cola->frente && i <= cola->final) {
+                printf("%d", cola->elementos[i]);
+            } else {
+                printf(" ");
+            }
+        } else {
+            printf(" ");
+        }
+    }
+
+    indicarInicioFinal(c, f, cola);
+}
+
+void indicarInicioFinal(int c, int f, struct Cola *cola) {
+    if (!estaVacia(cola)) {
+        int inicio_columna = c + (cola->frente * 4) + 3;
+        int final_columna = c + (cola->final * 4) + 3;
+
+        gotoxy(inicio_columna, f + 3);
+        printf("^I");
+        gotoxy(final_columna, f + 3);
+        printf("vF");
+    }
+}
+
+void inicializarCola(struct Cola *cola) {
+    cola->frente = -1;
+    cola->final = -1;
+}
+
+int estaVacia(struct Cola *cola) {
+    return cola->frente == -1;
+}
+
+int estaLlena(struct Cola *cola) {
+    return cola->final == MAX_TAMANO - 1;
+}
+
+void encolar(struct Cola *cola, int valor) {
+    if (estaLlena(cola)) {
+        gotoxy(28, 14);
+        printf("La cola está llena. No se puede insertar.");
+    } else {
+        if (estaVacia(cola)) {
+            cola->frente = 0;
+        }
+        cola->final++;
+        cola->elementos[cola->final] = valor;
+
+        gotoxy(24, 10);
+        printf("Opciones:\n");
+        gotoxy(24, 11);
+        printf("1. Insertar valor\n");
+        gotoxy(24, 12);
+        printf("2. Extraer valor\n");
+        gotoxy(24, 13);
+        printf("3. Salir\n");
+        arrg(MAX_TAMANO, 30, 15, cola);
+    }
+}
+
+int desencolar(struct Cola *cola) {
+    if (estaVacia(cola)) {
+        gotoxy(28, 14);
+        printf("La cola esta vacia. No se puede extraer.");
+        return -1;
+    } else {
+        int valorEliminado = cola->elementos[cola->frente];
+        cola->elementos[cola->frente] = -1;
+
+        if (cola->frente == cola->final) {
+            inicializarCola(cola);
+        } else {
+            cola->frente++;
+        }
+
+        system("cls");
+
+        gotoxy(24, 10);
+        printf("Opciones:\n");
+        gotoxy(24, 11);
+        printf("1. Insertar valor\n");
+        gotoxy(24, 12);
+        printf("2. Extraer valor\n");
+        gotoxy(24, 13);
+        printf("3. Salir\n");
+
+        arrg(MAX_TAMANO, 30, 15, cola);
+
+        return valorEliminado;
+    }
+}
+
+ main() {
+    struct Cola miCola;
+    inicializarCola(&miCola);
+    margen();
+
+    int eleccion, valor;
+    gotoxy(24, 10);
+    printf("Opciones:\n");
+    gotoxy(24, 11);
+    printf("1. Insertar valor\n");
+    gotoxy(24, 12);
+    printf("2. Extraer valor\n");
+    gotoxy(24, 13);
+    printf("3. Salir\n");
+
+    do {
+        gotoxy(23, 8);
+        printf("Seleccione una opcion: ");
+        scanf("%d", &eleccion);
+
+        switch (eleccion) {
+            case 1:
+                gotoxy(28, 14);
+                printf("Ingrese el valor a insertar:   ");
+                scanf("%d", &valor);
+                gotoxy(24, 7);
+                encolar(&miCola, valor);
+                margen();
+                break;
+            case 2:
+                valor = desencolar(&miCola);
+                if (valor != -1) {
+                    gotoxy(28, 14);
+                    printf("Elemento eliminado: %d\n", valor);
+                }
+                margen();
+                break;
+            case 3:
+                gotoxy(24, 11);
+                printf("Saliendo del programa.\n");
+                margen();
+                system("cls");
+                break;
+            default:
+                break;
+        }
+
+    } while (eleccion != 3);
+
+}
